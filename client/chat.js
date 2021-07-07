@@ -1,5 +1,5 @@
 (function () {
-  let userName;
+  let userName = 'default';
   function getName() {
     let invalidName = true;
     while (invalidName) {
@@ -19,9 +19,13 @@
 
   let ws;
 
-  function showMessages(data) {
+  function showMessages(data, floatRight) {
     let messageDiv = document.createElement('div');
-    messageDiv.className = 'chatBox__chats__flex--start';
+    if (floatRight) {
+      messageDiv.className = 'chatBox__chats__flex--end';
+    } else {
+      messageDiv.className = 'chatBox__chats__flex--start';
+    }
 
     let message = document.createElement('div');
     message.className = 'chatBox__chats__message';
@@ -38,26 +42,7 @@
     messages.appendChild(messageDiv).appendChild(name);
     messages.appendChild(messageDiv).appendChild(message);
     messages.appendChild(messageDiv).appendChild(time);
-  }
-
-  function showMyMessage(data) {
-    let messageDiv = document.createElement('div');
-    messageDiv.className = 'chatBox__chats__flex--end';
-    let message = document.createElement('div');
-    message.className = 'chatBox__chats__message';
-    message.innerText = `${data.message}`;
-
-    let name = document.createElement('span');
-    name.className = 'name';
-    name.innerText = `${data.name}`;
-
-    let time = document.createElement('span');
-    time.className = 'time';
-    time.innerText = `${data.time}`;
-
-    messages.appendChild(messageDiv).appendChild(name);
-    messages.appendChild(messageDiv).appendChild(message);
-    messages.appendChild(messageDiv).appendChild(time);
+    messages.scrollTop = messages.scrollHeight;
   }
 
   function init() {
@@ -74,7 +59,7 @@
       data = JSON.parse(data);
       console.log(data);
 
-      showMessages(data);
+      showMessages(data, false);
     };
     ws.onclose = function () {
       ws = null;
@@ -83,12 +68,16 @@
 
   function getCurrentTime() {
     let curTime = new Date();
-    return `${curTime.getHours()}:${curTime.getMinutes()}`;
+    let curMin = curTime.getMinutes();
+    if (curMin < 10) {
+      curMin = `0${curMin}`;
+    }
+    return `${curTime.getHours()}:${curMin}`;
   }
 
   sendBtn.onclick = function () {
     if (!ws) {
-      showMessages('No connection :(');
+      alert('No connection :(');
       return;
     }
 
@@ -103,7 +92,7 @@
     };
 
     ws.send(JSON.stringify(user));
-    showMyMessage(user);
+    showMessages(user, true);
     messageInput.value = '';
   };
   getName();
